@@ -147,6 +147,8 @@
 		83DC7E0217227FE600D59482 /* Icon-debug-72@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 83DC7E0117227FE600D59482 /* Icon-debug-72@2x.png */; };
 		83DC7E04172280FF00D59482 /* Icon-72@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 83DC7E03172280FF00D59482 /* Icon-72@2x.png */; };
 		83DC7E061722813700D59482 /* Icon-beta-72@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 83DC7E051722813700D59482 /* Icon-beta-72@2x.png */; };
+		B8C8E5841A15BC9900DE3C58 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 18A3BBA216178BDD003D9320 /* QuartzCore.framework */; };
+		B8C8E5851A15BDBF00DE3C58 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7945F61111A807FD00731598 /* Security.framework */; };
 		FF11B7F116BD92B400135A52 /* DropBoxKeys.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = FF11B7F016BD909800135A52 /* DropBoxKeys.xcconfig */; };
 /* End PBXBuildFile section */
 
@@ -338,6 +340,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B8C8E5851A15BDBF00DE3C58 /* Security.framework in Frameworks */,
+				B8C8E5841A15BC9900DE3C58 /* QuartzCore.framework in Frameworks */,
 				5A9667A712DC84DB00CD02F5 /* CoreGraphics.framework in Frameworks */,
 				5A9667A812DC84E400CD02F5 /* Foundation.framework in Frameworks */,
 				5A9667A912DC84EA00CD02F5 /* UIKit.framework in Frameworks */,
@@ -971,6 +975,7 @@
 		};
 		5A96678912DC83EE00CD02F5 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = FF11B7F016BD909800135A52 /* DropBoxKeys.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
@@ -983,6 +988,10 @@
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/UIKit.framework/Headers/UIKit.h";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"APP_SECRET=@\\\"$(APP_SECRET)\\\"",
+					"APP_KEY=@\\\"$(APP_KEY)\\\"",
+				);
 				INFOPLIST_FILE = "UnitTests-Info.plist";
 				INSTALL_PATH = "$(HOME)/Applications";
 				OTHER_LDFLAGS = (
@@ -1000,6 +1009,7 @@
 		};
 		5A96678A12DC83EE00CD02F5 /* AdHoc */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = FF11B7F016BD909800135A52 /* DropBoxKeys.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
@@ -1009,6 +1019,10 @@
 				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/UIKit.framework/Headers/UIKit.h";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"APP_SECRET=@\\\"$(APP_SECRET)\\\"",
+					"APP_KEY=@\\\"$(APP_KEY)\\\"",
+				);
 				INFOPLIST_FILE = "UnitTests-Info.plist";
 				INSTALL_PATH = "$(HOME)/Applications";
 				OTHER_LDFLAGS = (
@@ -1026,6 +1040,7 @@
 		};
 		5A96678B12DC83EE00CD02F5 /* AppStore */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = FF11B7F016BD909800135A52 /* DropBoxKeys.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
@@ -1035,6 +1050,11 @@
 				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "$(SYSTEM_LIBRARY_DIR)/Frameworks/UIKit.framework/Headers/UIKit.h";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"APP_SECRET=@\\\"$(APP_SECRET)\\\"",
+					"APP_KEY=@\\\"$(APP_KEY)\\\"",
+					FOR_APP_STORE,
+				);
 				INFOPLIST_FILE = "UnitTests-Info.plist";
 				INSTALL_PATH = "$(HOME)/Applications";
 				OTHER_LDFLAGS = (
