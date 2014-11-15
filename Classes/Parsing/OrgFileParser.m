@@ -139,113 +139,116 @@
             //     ...
             //     },
             // }
-            if (isIndex && [[[nodeStack lastObject] indentLevel] intValue] == 0) {
-                NSRange keywordRange = [line rangeOfString:@"#+TODO: "];
-                if (keywordRange.location != NSNotFound) {
+
+            // index file only
+            if (isIndex) {
+                if ([[[nodeStack lastObject] indentLevel] intValue] == 0) {
+                    NSRange keywordRange = [line rangeOfString:@"#+TODO: "];
+                    if (keywordRange.location != NSNotFound) {
+
+                        // Get rid of any (t), (d), etc type shortcuts
+                        line = [line stringByReplacingOccurrencesOfRegex:@"\\(\\w\\)" withString:@""];
+
+                        // CLEANUP: This regex is a hack
+                        NSArray *splitArray = [line captureComponentsMatchedByRegex:@"#\\+TODO:\\s+([\\s\\w-]*)(\\| ([\\s\\w-]*))*"];
+                        if ([splitArray count] > 0) {
+
+                            NSString *todoWords = [[splitArray objectAtIndex:1] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+                            NSString *doneWords = [[splitArray objectAtIndex:3] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+
+                            // Add a new todoStateGroup
+                            NSMutableArray *todoStateGroup = [NSMutableArray new];
+
+                            // Add 2 sub arrays to it, one full of keywords for todo, the other are done keywords
+                            NSMutableArray *todoStates = [NSMutableArray new];
+                            NSMutableArray *doneStates = [NSMutableArray new];
+
+                            [todoStateGroup addObject:todoStates];
+                            [todoStateGroup addObject:doneStates];
+
+                            if ([todoWords length] > 0) {
+                                for (NSString *state in [todoWords componentsSeparatedByRegex:@"\\s"]) {
+                                    if ([state length] > 0) {
+                                        [todoStates addObject:state];
+                                    }
+                                }
+                            }
+
+                            if ([doneWords length] > 0) {
+                                for (NSString *state in [doneWords componentsSeparatedByRegex:@"\\s"]) {
+                                    if ([state length] > 0) {
+                                        [doneStates addObject:state];
+                                    }
+                                }
+                            }
+
+                            // Add the group to the Settings instance using
+                            [[Settings instance] addTodoStateGroup:todoStateGroup];
+
+                            [todoStates release];
+                            [doneStates release];
+                            [todoStateGroup release];
+                        }
+                    }
+                }
+
+                // Check for TAGS line, which is the primary index file's way to let us know which
+                // tags are 'most important'.
+                //
+                // It may also have mutually exclusive tags, like a b { c d e } f, where only one of
+                // c, d, or e may be present on a given node.
+                if ([[[nodeStack lastObject] indentLevel] intValue] == 0) {
 
                     // Get rid of any (t), (d), etc type shortcuts
                     line = [line stringByReplacingOccurrencesOfRegex:@"\\(\\w\\)" withString:@""];
 
-                    // CLEANUP: This regex is a hack
-                    NSArray *splitArray = [line captureComponentsMatchedByRegex:@"#\\+TODO:\\s+([\\s\\w-]*)(\\| ([\\s\\w-]*))*"];
-                    if ([splitArray count] > 0) {
+                    NSArray *matches = [line captureComponentsMatchedByRegex:@"^#\\+TAGS:\\s(.+)"];
+                    if ([matches count] > 0) {
+                        NSString *tags = [NSString stringWithString:[matches objectAtIndex:1]];
 
-                        NSString *todoWords = [[splitArray objectAtIndex:1] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
-                        NSString *doneWords = [[splitArray objectAtIndex:3] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+                        // Remove the { } markers for mutex stuff, we'll worry about that later
+                        tags = [tags stringByReplacingOccurrencesOfString:@"{ " withString:@" "];
+                        tags = [tags stringByReplacingOccurrencesOfString:@" }" withString:@" "];
 
-                        // Add a new todoStateGroup
-                        NSMutableArray *todoStateGroup = [NSMutableArray new];
+                        // Safe to assume that the tag list is like ":a:b:c:"
+                        if ([tags characterAtIndex:0] == ':') {
+                            // Nothing to do
+                        } else {
+                            // Otherwise, it may be like "a b c"
+                            tags = [tags stringByReplacingOccurrencesOfString:@" " withString:@":"];
+                            tags = [NSString stringWithFormat:@":%@:", tags];
+                        }
 
-                        // Add 2 sub arrays to it, one full of keywords for todo, the other are done keywords
-                        NSMutableArray *todoStates = [NSMutableArray new];
-                        NSMutableArray *doneStates = [NSMutableArray new];
-
-                        [todoStateGroup addObject:todoStates];
-                        [todoStateGroup addObject:doneStates];
-
-                        if ([todoWords length] > 0) {
-                            for (NSString *state in [todoWords componentsSeparatedByRegex:@"\\s"]) {
-                                if ([state length] > 0) {
-                                    [todoStates addObject:state];
-                                }
+                        // Tell the settings store about any potentially new tags
+                        {
+                            NSArray *tagArray = [tags componentsSeparatedByString:@":"];
+                            for (NSString *tag in tagArray) {
+                                [[Settings instance] addPrimaryTag:tag];
                             }
                         }
 
-                        if ([doneWords length] > 0) {
-                            for (NSString *state in [doneWords componentsSeparatedByRegex:@"\\s"]) {
-                                if ([state length] > 0) {
-                                    [doneStates addObject:state];
-                                }
+                        tags = [NSString stringWithString:[matches objectAtIndex:1]];
+                        if ([tags rangeOfString:@"{"].location != NSNotFound) {
+                            // Handle mutex stuff
+                            // { A B C } { D E } F { G H } I { J }
+                            NSArray *captures = [tags arrayOfCaptureComponentsMatchedByRegex:@"\\{ (.+?) \\}"];
+                            for (NSArray *capture in captures) {
+                                NSArray *mutexTags = [[capture objectAtIndex:1] componentsSeparatedByString:@" "];
+                                [[Settings instance] addMutuallyExclusiveTagGroup:mutexTags];
                             }
                         }
-
-                        // Add the group to the Settings instance using
-                        [[Settings instance] addTodoStateGroup:todoStateGroup];
-
-                        [todoStates release];
-                        [doneStates release];
-                        [todoStateGroup release];
                     }
                 }
-            }
 
-            // Check for TAGS line, which is the primary index file's way to let us know which
-            // tags are 'most important'.
-            //
-            // It may also have mutually exclusive tags, like a b { c d e } f, where only one of
-            // c, d, or e may be present on a given node.
-            if (isIndex && [[[nodeStack lastObject] indentLevel] intValue] == 0) {
-
-                // Get rid of any (t), (d), etc type shortcuts
-                line = [line stringByReplacingOccurrencesOfRegex:@"\\(\\w\\)" withString:@""];
-
-                NSArray *matches = [line captureComponentsMatchedByRegex:@"^#\\+TAGS:\\s(.+)"];
-                if ([matches count] > 0) {
-                    NSString *tags = [NSString stringWithString:[matches objectAtIndex:1]];
-
-                    // Remove the { } markers for mutex stuff, we'll worry about that later
-                    tags = [tags stringByReplacingOccurrencesOfString:@"{ " withString:@" "];
-                    tags = [tags stringByReplacingOccurrencesOfString:@" }" withString:@" "];
-
-                    // Safe to assume that the tag list is like ":a:b:c:"
-                    if ([tags characterAtIndex:0] == ':') {
-                        // Nothing to do
-                    } else {
-                        // Otherwise, it may be like "a b c"
-                        tags = [tags stringByReplacingOccurrencesOfString:@" " withString:@":"];
-                        tags = [NSString stringWithFormat:@":%@:", tags];
-                    }
-
-                    // Tell the settings store about any potentially new tags
-                    {
-                        NSArray *tagArray = [tags componentsSeparatedByString:@":"];
-                        for (NSString *tag in tagArray) {
-                            [[Settings instance] addPrimaryTag:tag];
-                        }
-                    }
-
-                    tags = [NSString stringWithString:[matches objectAtIndex:1]];
-                    if ([tags rangeOfString:@"{"].location != NSNotFound) {
-                        // Handle mutex stuff
-                        // { A B C } { D E } F { G H } I { J }
-                        NSArray *captures = [tags arrayOfCaptureComponentsMatchedByRegex:@"\\{ (.+?) \\}"];
-                        for (NSArray *capture in captures) {
-                            NSArray *mutexTags = [[capture objectAtIndex:1] componentsSeparatedByString:@" "];
-                            [[Settings instance] addMutuallyExclusiveTagGroup:mutexTags];
-                        }
-                    }
-                }
-            }
-
-
-            // Handle #+ALLPRIORITIES
-            if (isIndex && [[[nodeStack lastObject] indentLevel] intValue] == 0) {
-                NSArray *matches = [line captureComponentsMatchedByRegex:@"^#\\+ALLPRIORITIES:\\s(.+)"];
-                if ([matches count] > 0) {
-                    NSArray *priorities = [[matches objectAtIndex:1] componentsSeparatedByString:@" "];
-                    for (NSString *priority in priorities) {
-                        if ([priority length] > 0) {
-                            [[Settings instance] addPriority:priority];
+                // Handle #+ALLPRIORITIES
+                if ([[[nodeStack lastObject] indentLevel] intValue] == 0) {
+                    NSArray *matches = [line captureComponentsMatchedByRegex:@"^#\\+ALLPRIORITIES:\\s(.+)"];
+                    if ([matches count] > 0) {
+                        NSArray *priorities = [[matches objectAtIndex:1] componentsSeparatedByString:@" "];
+                        for (NSString *priority in priorities) {
+                            if ([priority length] > 0) {
+                                [[Settings instance] addPriority:priority];
+                            }
                         }
                     }
                 }
@@ -292,7 +295,8 @@
 
             // Handle headings
             if (numStars > 0) {
-
+                // not clear why we do this only in the case where we have stars
+                // are there not default todo states if there are no headlines in the index
                 if (isIndex && !addedDefaultTodoStates) {
                     NSMutableArray *todoStateGroup = [NSMutableArray arrayWithCapacity:2];
                     [todoStateGroup addObject:[NSMutableArray arrayWithCapacity:0]];
@@ -307,13 +311,17 @@
                 // If this heading has fewer stars than the its parent, pop nodes off
                 // of the nodeStack until we hit this level
                 while (lastNumStars > numStars && [nodeStack count] > 0) {
-                    if ([[[nodeStack lastObject] indentLevel] intValue] == lastNumStars) {
-                        [nodeStack removeLastObject];
-                    }
-                    lastNumStars--;
+                    // replace this
+                    //if ([[[nodeStack lastObject] indentLevel] intValue] == lastNumStars) {
+                    //     [nodeStack removeLastObject];
+                    //}
+                    //lastNumStars--;
+                    [nodeStack removeLastObject];
+                    lastNumStars = [[[nodeStack lastObject] indentLevel] intValue];
                 }
 
-                // If the last heading was
+                // If the last heading was a silbing of the current heading then remove
+                // it from the stack.
                 if (lastNumStars == numStars && [nodeStack count] > 0) {
                     [nodeStack removeLastObject];
                 }
