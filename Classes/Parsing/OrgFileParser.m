@@ -81,6 +81,14 @@
 
     // Parse file
     {
+/*
+        OrgParser * parser = [[OrgParser alloc] init];
+        [parser setBody:entireFile];
+
+        NSMutableArray * nodes = [parser orgElementCurrentElement:[NSNumber numberWithInt:0] granulatrity:headlineGranularity priority:firstSection structure:nilStrucutre];
+  */
+
+
         NSArray *lines;
         NSString *line;
         NSMutableString *bodyBuffer = [[NSMutableString alloc] init];
@@ -304,7 +312,17 @@
                     [[Settings instance] addTodoStateGroup:todoStateGroup];
                     addedDefaultTodoStates = true;
                 }
-
+                
+                // checking our new regex
+                //static NSString *complexHeadlineRegex =  @"^(\\*+)(?: +(TODO|IN-PROGRESS|WAITING|DONE|CANCELLED))?(?: +(\\[#.\\]))?(?: +(.*?))??(?:[ 	]+(:[[:alnum:]_@#%:]+:))?[ 	]*$";
+                static NSString *complexHeadlineRegex =  @"^(\\*+)(?: +(TODO|IN-PROGRESS|WAITING|DONE|CANCELLED))?(?: +(\\[#.\\]))?(?: +(.*?))?";//?(?:[ 	]+(:[[:alnum:]_@#%:]+:))?[ 	]*$";
+                NSArray *splitHeadlineArray = [line captureComponentsMatchedByRegex:complexHeadlineRegex];
+                
+                NSLog(@"some line hmmm %@", line);
+                for (NSString *headlinePortion in splitHeadlineArray) {
+                    NSLog ( @"Line protion %@", headlinePortion );
+                }
+ 
                 // The title is * THIS PART
                 NSString *title = [[line substringFromIndex:(numStars+1)] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
 

@@ -147,6 +147,11 @@
 		83DC7E0217227FE600D59482 /* Icon-debug-72@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 83DC7E0117227FE600D59482 /* Icon-debug-72@2x.png */; };
 		83DC7E04172280FF00D59482 /* Icon-72@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 83DC7E03172280FF00D59482 /* Icon-72@2x.png */; };
 		83DC7E061722813700D59482 /* Icon-beta-72@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 83DC7E051722813700D59482 /* Icon-beta-72@2x.png */; };
+		B8BEC5CF1A1980AB006F0CF1 /* OrgNode.m in Sources */ = {isa = PBXBuildFile; fileRef = B8BEC5CE1A1980AB006F0CF1 /* OrgNode.m */; };
+		B8BEC5D21A1980C5006F0CF1 /* HeaderNode.m in Sources */ = {isa = PBXBuildFile; fileRef = B8BEC5D11A1980C5006F0CF1 /* HeaderNode.m */; };
+		B8BEC5D61A1984D6006F0CF1 /* HeaderNodeTest.m in Sources */ = {isa = PBXBuildFile; fileRef = B8BEC5D51A1984D6006F0CF1 /* HeaderNodeTest.m */; };
+		B8BEC5EC1A199CCC006F0CF1 /* HeaderNode.m in Sources */ = {isa = PBXBuildFile; fileRef = B8BEC5D11A1980C5006F0CF1 /* HeaderNode.m */; };
+		B8BEC5ED1A199CD6006F0CF1 /* OrgNode.m in Sources */ = {isa = PBXBuildFile; fileRef = B8BEC5CE1A1980AB006F0CF1 /* OrgNode.m */; };
 		B8C8E5841A15BC9900DE3C58 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 18A3BBA216178BDD003D9320 /* QuartzCore.framework */; };
 		B8C8E5851A15BDBF00DE3C58 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7945F61111A807FD00731598 /* Security.framework */; };
 		FF11B7F116BD92B400135A52 /* DropBoxKeys.xcconfig in Resources */ = {isa = PBXBuildFile; fileRef = FF11B7F016BD909800135A52 /* DropBoxKeys.xcconfig */; };
@@ -315,6 +320,11 @@
 		83DC7E03172280FF00D59482 /* Icon-72@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Icon-72@2x.png"; sourceTree = "<group>"; };
 		83DC7E051722813700D59482 /* Icon-beta-72@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Icon-beta-72@2x.png"; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* MobileOrg-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "MobileOrg-Info.plist"; sourceTree = "<group>"; };
+		B8BEC5CD1A1980AB006F0CF1 /* OrgNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OrgNode.h; sourceTree = "<group>"; };
+		B8BEC5CE1A1980AB006F0CF1 /* OrgNode.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OrgNode.m; sourceTree = "<group>"; };
+		B8BEC5D01A1980C5006F0CF1 /* HeaderNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HeaderNode.h; sourceTree = "<group>"; };
+		B8BEC5D11A1980C5006F0CF1 /* HeaderNode.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HeaderNode.m; sourceTree = "<group>"; };
+		B8BEC5D51A1984D6006F0CF1 /* HeaderNodeTest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = HeaderNodeTest.m; sourceTree = "<group>"; };
 		FF11B7F016BD909800135A52 /* DropBoxKeys.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = DropBoxKeys.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -562,6 +572,11 @@
 				791653A71078109B00695E4C /* EditsFileParser.m */,
 				791653C0107814C500695E4C /* EditEntity.h */,
 				791653C1107814C500695E4C /* EditEntity.m */,
+				B8BEC5D51A1984D6006F0CF1 /* HeaderNodeTest.m */,
+				B8BEC5D01A1980C5006F0CF1 /* HeaderNode.h */,
+				B8BEC5D11A1980C5006F0CF1 /* HeaderNode.m */,
+				B8BEC5CD1A1980AB006F0CF1 /* OrgNode.h */,
+				B8BEC5CE1A1980AB006F0CF1 /* OrgNode.m */,
 			);
 			path = Parsing;
 			sourceTree = "<group>";
@@ -878,6 +893,7 @@
 				7982F3621073F2FA00AEA6BC /* Node.m in Sources */,
 				7982F3631073F2FA00AEA6BC /* Note.m in Sources */,
 				7982F3641073F2FA00AEA6BC /* FileChecksum.m in Sources */,
+				B8BEC5CF1A1980AB006F0CF1 /* OrgNode.m in Sources */,
 				7982F3651073F2FA00AEA6BC /* LocalEditAction.m in Sources */,
 				7982F36A1073F33500AEA6BC /* OutlineViewController.m in Sources */,
 				7982F37D1073F6B700AEA6BC /* GlobalUtils.m in Sources */,
@@ -907,6 +923,7 @@
 				793F811F107D381A00674D0A /* SessionManager.m in Sources */,
 				793F8128107D38C900674D0A /* OutlineState.m in Sources */,
 				790B413F10814D8400A852F1 /* ActionMenuController.m in Sources */,
+				B8BEC5D21A1980C5006F0CF1 /* HeaderNode.m in Sources */,
 				790B417E10814FAC00A852F1 /* OutlineTableView.m in Sources */,
 				790B455610826A0900A852F1 /* PriorityEditController.m in Sources */,
 				7945F5A111A8066200731598 /* WebDavTransferManager.m in Sources */,
@@ -919,8 +936,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B8BEC5ED1A199CD6006F0CF1 /* OrgNode.m in Sources */,
+				B8BEC5EC1A199CCC006F0CF1 /* HeaderNode.m in Sources */,
 				5A96682712DC89E600CD02F5 /* GHUnitIOSTestMain.m in Sources */,
 				5A49BC7512DCFD5700662472 /* NodeTest.m in Sources */,
+				B8BEC5D61A1984D6006F0CF1 /* HeaderNodeTest.m in Sources */,
 				5A58412412DE5C7D00FF403A /* Node.m in Sources */,
 				5A58412912DE5CAE00FF403A /* RegexKitLite.m in Sources */,
 				5A58413012DE5CF700FF403A /* Settings.m in Sources */,
