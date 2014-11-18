@@ -26,6 +26,7 @@
 #import "DataUtils.h"
 #import "Settings.h"
 #import "RegexKitLite.h"
+#import "HeaderNode.h"
 
 @implementation OrgFileParser
 
@@ -313,16 +314,6 @@
                     addedDefaultTodoStates = true;
                 }
                 
-                // checking our new regex
-                //static NSString *complexHeadlineRegex =  @"^(\\*+)(?: +(TODO|IN-PROGRESS|WAITING|DONE|CANCELLED))?(?: +(\\[#.\\]))?(?: +(.*?))??(?:[ 	]+(:[[:alnum:]_@#%:]+:))?[ 	]*$";
-                static NSString *complexHeadlineRegex =  @"^(\\*+)(?: +(TODO|IN-PROGRESS|WAITING|DONE|CANCELLED))?(?: +(\\[#.\\]))?(?: +(.*?))?";//?(?:[ 	]+(:[[:alnum:]_@#%:]+:))?[ 	]*$";
-                NSArray *splitHeadlineArray = [line captureComponentsMatchedByRegex:complexHeadlineRegex];
-                
-                NSLog(@"some line hmmm %@", line);
-                for (NSString *headlinePortion in splitHeadlineArray) {
-                    NSLog ( @"Line protion %@", headlinePortion );
-                }
- 
                 // The title is * THIS PART
                 NSString *title = [[line substringFromIndex:(numStars+1)] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
 
@@ -428,6 +419,21 @@
                     outlinePath = [outlinePath stringByAppendingString:@"/"];
                 }
                 outlinePath = [outlinePath stringByAppendingString:EscapeStringForOutlinePath(title)];
+
+                // need to add the todo state handeling
+                HeaderNode * createdNode = [HeaderNode createHeaderNode:NSMakeRange(0, line.length) From:line TodoStates:@""];
+                if (![title isEqualToString:[createdNode rawValue]]) {
+                    NSLog(@"title did not come out equal title:'%@' rawValue:'%@'", title, [createdNode rawValue]);
+                }
+                if (![[createdNode level] isEqualToNumber:[NSNumber numberWithInt:numStars]]) {
+                    NSLog(@"level is not equal:'%@' created node:'%@'", [NSNumber numberWithInt:numStars], [createdNode level]);
+                }
+                if (![[createdNode todoKeyWord] isEqualToString:todoState]) {
+                    NSLog(@"todo not matching todoState:'%@' todoKeyWord: '%@'", todoState, [createdNode todoKeyWord]);
+                }
+                if (![[createdNode priority] isEqualToString:priority]) {
+                    NSLog(@"priority not matching createdPriority:'%@' priority:'%@'", [createdNode priority], priority);
+                }
 
                 // Create the node for this entry
                 Node *node = (Node*)[NSEntityDescription insertNewObjectForEntityForName:@"Node" inManagedObjectContext:managedObjectContext];

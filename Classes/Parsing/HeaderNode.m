@@ -42,31 +42,29 @@
     NSString * regex = @"^(\\*+)(?: +(TODO|IN-PROGRESS|WAITING|DONE|CANCELLED))?(?: +(\\[#.\\]))?(?: +(.*?))\x3f\x3f(?:[ 	]+(:[\\d\\w_@#%:]+:))?[ 	]*$";
     NSArray *splitHeadlineArray = [line captureComponentsMatchedByRegex:regex];
     HeaderNode * node = [[HeaderNode alloc] init];
-    for (NSString * object in splitHeadlineArray) {
-        // do something with object
-        NSLog(@"out '%@'", object);
-    }
+
     if ([splitHeadlineArray count] >= 2 && splitHeadlineArray[1]) {
         NSNumber * num = [NSNumber numberWithInt:[splitHeadlineArray[1] length]];
         [node setLevel:num];
-        NSLog(@" star%@", splitHeadlineArray[1]);
     }
-    
+
     if ([splitHeadlineArray count] >= 3 && splitHeadlineArray[2]) {
         [node setTodoKeyWord:[splitHeadlineArray objectAtIndex:2]];
     }
+
     if ([splitHeadlineArray count] >= 6 && splitHeadlineArray[5]) {
         NSMutableArray * tags = [NSMutableArray arrayWithArray:[splitHeadlineArray[5] componentsSeparatedByString:@":"]];
         [node setTags:tags];
         [tags release];
     }
+
     if ([splitHeadlineArray count] >= 5 && splitHeadlineArray[4]) {
         [node setRawValue:splitHeadlineArray[4]];
     }
     else {
         [node setRawValue:@""];
     }
-    
+
     return  node;
 };
 
