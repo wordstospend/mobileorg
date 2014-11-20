@@ -265,7 +265,12 @@
 
             // Check for FILETAGS lines, add those tags to the file node
             if ([[[nodeStack lastObject] indentLevel] intValue] == 0) {
-
+                /* nfair
+                * this is to capture shortcuts of the style  (t) eg. TODO(t) -> TODO
+                * the only propble with this is shortcuts are not limited to a single
+                * character. WAIT(w@/!) where the @ and ! trigger notes and timestamping
+                * So the bellow regex will break on some org files
+                */
                 // Get rid of any (t), (d), etc type shortcuts
                 line = [line stringByReplacingOccurrencesOfRegex:@"\\(\\w\\)" withString:@""];
 
@@ -304,8 +309,7 @@
 
             // Handle headings
             if (numStars > 0) {
-                // not clear why we do this only in the case where we have stars
-                // are there not default todo states if there are no headlines in the index
+                // this adds default todo after we reach the first file link headline
                 if (isIndex && !addedDefaultTodoStates) {
                     NSMutableArray *todoStateGroup = [NSMutableArray arrayWithCapacity:2];
                     [todoStateGroup addObject:[NSMutableArray arrayWithCapacity:0]];
@@ -314,9 +318,6 @@
                     addedDefaultTodoStates = true;
                 }
                 
-                // The title is * THIS PART
-                NSString *title = [[line substringFromIndex:(numStars+1)] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
-
                 // If this heading has fewer stars than the its parent, pop nodes off
                 // of the nodeStack until we hit this level
                 while (lastNumStars > numStars && [nodeStack count] > 0) {
@@ -342,53 +343,33 @@
                 // Increment sequence index, which helps us define the order of children
                 sequenceIndex++;
 
-                // Extract the keyword from the title, if it exists
-                NSString *todoState = @"";
-                NSRange spaceRange = [title rangeOfString:@" "];
-                if (spaceRange.location != NSNotFound) {
-                    // Make sure the title is longer than just a keyword
-                    if ([title length] > spaceRange.location+1) {
-                        NSString *firstWord = [title substringToIndex:spaceRange.location];
-                        if ([[Settings instance] isTodoState:firstWord] ||
-                            [[Settings instance] isDoneState:firstWord]) {
-                            title = [title substringFromIndex:spaceRange.location+1];
-                            todoState = firstWord;
-                        }
+                NSMutableString * todoRex = [NSMutableString stringWithString:@""];
+                NSMutableArray *todoWords = nil;
+                for (NSMutableArray *group in [[Settings instance] todoStateGroups]) {
+                    if (todoWords) {
+                        [todoWords addObjectsFromArray:[group objectAtIndex:0]];
+                        [todoWords addObjectsFromArray:[group objectAtIndex:0]];
                     }
+                    else {
+                        todoWords = [NSMutableArray arrayWithArray:[group objectAtIndex:0]];
+                        [todoWords addObjectsFromArray:[group objectAtIndex:0]];
+                    }
+
                 }
+                // this has some possible bad effects on runtime: the todoRex is not dedupped, which could
+                // result in a expensive regex. But perhaps not.
+                [todoRex appendString:[todoWords componentsJoinedByString:@"|"]];
+                HeaderNode * createdNode = [HeaderNode createHeaderNode:NSMakeRange(0, line.length) From:line TodoStates:todoRex];
 
-                // Extract priority from the title, if it exists
-                NSString *priority = @"";
-                NSArray *priorityCaptures = [title captureComponentsMatchedByRegex:@"\\[#([a-zA-Z0-9])\\] (.+)"];
-                if ([priorityCaptures count] > 0) {
-                    if ([[Settings instance] isPriority:[priorityCaptures objectAtIndex:1]]) {
-                        priority = [priorityCaptures objectAtIndex:1];
-                        title = [priorityCaptures objectAtIndex:2];
-                    }
-                }
-
-                // Extract tags from the title, if they exist
-                NSString *tags = @"";
-                static NSString *tagRegExp = @"(.+?)[ \\s]+(:([@\\w\\.]+:)+)[ \\s]*$";
-                NSArray *splitTagTitleArray = [title captureComponentsMatchedByRegex:tagRegExp];
-                if ([splitTagTitleArray count] >= 2) {
-                    title = [splitTagTitleArray objectAtIndex:1];
-                    tags = [splitTagTitleArray objectAtIndex:2];
-
-                    // Tell the settings store about any potentially new tags
-                    {
-                        NSArray *tagArray = [tags componentsSeparatedByString:@":"];
-                        for (NSString *element in tagArray) {
-                            if (element && [element length] > 0) {
-                                [[Settings instance] addTag:element];
-                            }
-                        }
-                    }
+                // Tell the settings store about any potentially new tags
+                for (NSString *element in [createdNode tags]) {
+                    [[Settings instance] addTag:element];
                 }
 
                 // Determine the inherited tags
                 NSString *inheritedTags = [[nodeStack lastObject] completeTags];
 
+//*************************** Construct the old node style ************************/
                 // Create the node's outline path
                 //
                 // [[olp:path/to/file%3aa.org:grandparent a%2fb/%5b#A%5d parent/heading][heading]]
@@ -418,33 +399,18 @@
                 if ([outlinePath characterAtIndex:[outlinePath length]-1] != ':') {
                     outlinePath = [outlinePath stringByAppendingString:@"/"];
                 }
-                outlinePath = [outlinePath stringByAppendingString:EscapeStringForOutlinePath(title)];
-
-                // need to add the todo state handeling
-                HeaderNode * createdNode = [HeaderNode createHeaderNode:NSMakeRange(0, line.length) From:line TodoStates:@""];
-                if (![title isEqualToString:[createdNode rawValue]]) {
-                    NSLog(@"title did not come out equal title:'%@' rawValue:'%@'", title, [createdNode rawValue]);
-                }
-                if (![[createdNode level] isEqualToNumber:[NSNumber numberWithInt:numStars]]) {
-                    NSLog(@"level is not equal:'%@' created node:'%@'", [NSNumber numberWithInt:numStars], [createdNode level]);
-                }
-                if (![[createdNode todoKeyWord] isEqualToString:todoState]) {
-                    NSLog(@"todo not matching todoState:'%@' todoKeyWord: '%@'", todoState, [createdNode todoKeyWord]);
-                }
-                if (![[createdNode priority] isEqualToString:priority]) {
-                    NSLog(@"priority not matching createdPriority:'%@' priority:'%@'", [createdNode priority], priority);
-                }
+                outlinePath = [outlinePath stringByAppendingString:EscapeStringForOutlinePath([createdNode rawValue])];
 
                 // Create the node for this entry
                 Node *node = (Node*)[NSEntityDescription insertNewObjectForEntityForName:@"Node" inManagedObjectContext:managedObjectContext];
-                [node setHeading:title];
-                [node setIndentLevel:[NSNumber numberWithInt:numStars]];
+                [node setHeading:[createdNode rawValue]];
+                [node setIndentLevel:[createdNode level]];
                 [node setSequenceIndex:[NSNumber numberWithInt:sequenceIndex]];
                 [node setOutlinePath:outlinePath];
-                [node setTodoState:todoState];
+                [node setTodoState:[createdNode todoKeyWord]];
                 [node setInheritedTags:inheritedTags];
-                [node setTags:tags];
-                [node setPriority:priority];
+                [node setTags:[[createdNode tags] componentsJoinedByString:@":"]];
+                [node setPriority:[createdNode priority]];
                 [node setReadOnly:[NSNumber numberWithBool:readOnlyFile]];
                 [[nodeStack lastObject] addChildrenObject:node];
 

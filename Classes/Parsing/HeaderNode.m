@@ -39,30 +39,29 @@
     // \x3f is used instead of the ? character twice because '??(' parses to '[' I could find no documentation for this
     // behavior
     // \w\d was used as a substitute for [:alnum:] though I'm not sure that this is safe
-    NSString * regex = @"^(\\*+)(?: +(TODO|IN-PROGRESS|WAITING|DONE|CANCELLED))?(?: +(\\[#.\\]))?(?: +(.*?))\x3f\x3f(?:[ 	]+(:[\\d\\w_@#%:]+:))?[ 	]*$";
+    NSString * regex = [NSString stringWithFormat:@"^(\\*+)(?: +(%@))?(?: +(\\[#.\\]))?(?: +(.*?))\x3f\x3f(?:[ 	]+(:[\\d\\w_@#%%:]+:))?[ 	]*$", todStates];
     NSArray *splitHeadlineArray = [line captureComponentsMatchedByRegex:regex];
     HeaderNode * node = [[HeaderNode alloc] init];
 
-    if ([splitHeadlineArray count] >= 2 && splitHeadlineArray[1]) {
+    if ([splitHeadlineArray count] > 1 && splitHeadlineArray[1]) {
         NSNumber * num = [NSNumber numberWithInt:[splitHeadlineArray[1] length]];
         [node setLevel:num];
     }
-
-    if ([splitHeadlineArray count] >= 3 && splitHeadlineArray[2]) {
+    if ([splitHeadlineArray count] > 2 && splitHeadlineArray[2]) {
         [node setTodoKeyWord:[splitHeadlineArray objectAtIndex:2]];
     }
-
-    if ([splitHeadlineArray count] >= 6 && splitHeadlineArray[5]) {
+    if ([splitHeadlineArray count] > 3 && splitHeadlineArray[3]) {
+        [node setPriority:[splitHeadlineArray objectAtIndex:3]];
+    }
+    if ([splitHeadlineArray count] > 4 && splitHeadlineArray[4]) {
+        [node setRawValue:splitHeadlineArray[4]];
+    } else {
+        [node setRawValue:@""];
+    }
+    if ([splitHeadlineArray count] > 5 && splitHeadlineArray[5]) {
         NSMutableArray * tags = [NSMutableArray arrayWithArray:[splitHeadlineArray[5] componentsSeparatedByString:@":"]];
         [node setTags:tags];
         [tags release];
-    }
-
-    if ([splitHeadlineArray count] >= 5 && splitHeadlineArray[4]) {
-        [node setRawValue:splitHeadlineArray[4]];
-    }
-    else {
-        [node setRawValue:@""];
     }
 
     return  node;
