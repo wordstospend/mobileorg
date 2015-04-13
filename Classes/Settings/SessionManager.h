@@ -21,6 +21,13 @@
 //
 
 #import <Foundation/Foundation.h>
+/*!
+ 
+ @class SessionManager
+ 
+ @abstract Keeps a stack of states for each outlineViewController
+ 
+ */
 
 @class OutlineState;
 @class Note;

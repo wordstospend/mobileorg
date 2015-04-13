@@ -22,6 +22,14 @@
 
 #import <Foundation/Foundation.h>
 #import "OutlineViewController.h"
+/*!
+ 
+ @class OutlineState
+ 
+ @abstract Container object for outline state with marshalling to and from a dictionary
+
+ */
+
 
 @interface OutlineState : NSObject {
     OutlineSelectionType selectionType;
@@ -30,9 +38,13 @@
     NSString *selectedLink;
 }
 
+/// selection type of some kind
 @property (nonatomic) OutlineSelectionType selectionType;
+/// the index you fool
 @property (nonatomic) int selectedChildIndex;
+/// the scroll position
 @property (nonatomic) int scrollPositionY;
+/// selected link
 @property (nonatomic, retain) NSString *selectedLink;
 
 - (NSDictionary*)toDictionary;
